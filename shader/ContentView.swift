@@ -17,19 +17,25 @@ struct ContentView: View {
             // Simple background
             Color.black.ignoresSafeArea()
             
-            // Image with shader - SIMPLE APPROACH
+            // Image with magnification shader - proper approach
             if let uiImage = selectedImage {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
-                    .colorEffect(
-                        ShaderLibrary.minorityReportMagnifier(
-                            .float2(0.5, 0.5),
-                            .float(2.0),
-                            .float(0.15),
-                            .float(0.02)
-                        )
-                    )
+                    .visualEffect { content, proxy in
+                        content
+                            .layerEffect(
+                                ShaderLibrary.loupe(
+                                    .float(80),
+                                    .float2(
+                                        proxy.size.width / 2,
+                                        proxy.size.height / 2
+                                    ),
+                                    .float(2.0)
+                                ),
+                                maxSampleOffset: CGSize(width: 300, height: 300)
+                            )
+                    }
             }
             
             // Button
