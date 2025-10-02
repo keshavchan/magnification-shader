@@ -12,43 +12,47 @@ struct ContentView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
     @State private var touchLocation: CGPoint = .zero
+    let startDate = Date()
 
     var body: some View {
         ZStack {
             // Simple background
             Color.black.ignoresSafeArea()
             
-            // Image with magnification shader - proper approach
+            // Image with animated magnification shader
             if let uiImage = selectedImage {
-                GeometryReader { geometry in
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .visualEffect { content, proxy in
-                            content
-                                .layerEffect(
-                                    ShaderLibrary.loupe(
-                                        .float(80),
-                                        .float2(touchLocation),
-                                        .float(2.0)
-                                    ),
-                                    maxSampleOffset: CGSize(width: 300, height: 300)
-                                )
-                        }
-                        .gesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { value in
-                                    touchLocation = value.location
-                                }
-                        )
-                        .onAppear {
-                            // Initialize to center
-                            touchLocation = CGPoint(
-                                x: geometry.size.width / 2,
-                                y: geometry.size.height / 2
+                TimelineView(.animation) { timeline in
+                    GeometryReader { geometry in
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .visualEffect { content, proxy in
+                                content
+                                    .layerEffect(
+                                        ShaderLibrary.loupe(
+                                            .float(80),
+                                            .float2(touchLocation),
+                                            .float(2.0),
+                                            .float(startDate.timeIntervalSinceNow)
+                                        ),
+                                        maxSampleOffset: CGSize(width: 300, height: 300)
+                                    )
+                            }
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { value in
+                                        touchLocation = value.location
+                                    }
                             )
-                        }
+                            .onAppear {
+                                // Initialize to center
+                                touchLocation = CGPoint(
+                                    x: geometry.size.width / 2,
+                                    y: geometry.size.height / 2
+                                )
+                            }
+                    }
                 }
             }
             
